@@ -28,7 +28,7 @@ Rules:
 - For single-step problems, use_plan should be false.
 - For conceptual questions, use_plan should be false, steps should be [], and original_expression should be "".
 - Do not answer conceptual questions in this planner response.
-- operation must be one of: derivative, solve_equation, simplify.
+- operation must be one of: derivative, solve_equation, simplify, integral.
 - original_expression must be SymPy-compatible.
 - Use ** for powers and * for multiplication.
 - input_source must be either "original_expression" or "previous_result".

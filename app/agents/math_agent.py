@@ -5,7 +5,7 @@ from app.prompts.direct_answer import DIRECT_ANSWER_PROMPT
 from app.prompts.explanation import TOOL_EXPLANATION_PROMPT, PLAN_EXPLANATION_PROMPT
 from app.prompts.planning import MATH_PLANNER_PROMPT
 
-from app.tools.math_tools import derivative, simplify_expression, solve_equation
+from app.tools.registry import TOOLS
 
 
 def extract_math_request(question: str) -> MathExtraction:
@@ -22,7 +22,7 @@ def classify_intent(question: str):
     operations = {
         "simplify": ["simplify", "simplest", "simplest form", "simple"],
         "solve_equation": ["solve", "solve equation", "answer", "find"],
-        "derivative": ["differentiate", "derivative", "d/dx", "dx/dy", "f'", "d/d"]
+        "derivative": ["differentiate", "derivative", "d/dx", "dx/dy", "f'", "d/d", "deriv"]
 
     }
     for operation in operations:
@@ -37,16 +37,25 @@ def classify_intent(question: str):
 
 
 #Use tools
-def run_math_tool(operation: str, expression: str, variable: str | None = "x"):
-    if operation == "derivative":
-        return derivative(expression, variable or "x")
-    if operation == "simplify":
-        return simplify_expression(expression)
-    if operation == "solve_equation":
-        return solve_equation(expression, variable or "x")
-    return {
-        "error": f"No tool implemented for operation: {operation}"
-    }
+def run_math_tool(operation: str, expression: str, variable: str | None = "x", lower_bound: str | None = None, upper_bound: str | None = None):
+    tool_info = TOOLS.get(operation)
+    if tool_info is None: 
+        return {
+            "error": f"No tool implemented for operation {operation}"
+        }
+    tool_function = tool_info["function"]
+    if operation == "integral":
+        return tool_function(
+            expression,
+            variable or "x",
+            lower_bound,
+            upper_bound
+        )
+    return tool_function(expression, variable or "x")
+
+#Ensure only answers with tools. If the tool is not implemented, return false:
+def is_tool_implemented(operation: str) -> bool:
+    return operation in TOOLS
 
 #Answer general questions directly
 def answer_directly(question: str) -> str:

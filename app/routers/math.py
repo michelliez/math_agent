@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.schemas import MathRequest
-from app.agents.math_agent import extract_math_request, answer_directly, run_math_tool, explain_tool_result, create_math_plan, execute_math_plan, explain_plan_result
+from app.agents.math_agent import extract_math_request, answer_directly, run_math_tool, explain_tool_result, create_math_plan, execute_math_plan, explain_plan_result, is_tool_implemented
 
 
 router = APIRouter(prefix="/math", tags=["Math"])
@@ -37,11 +37,19 @@ def ask(req: MathRequest):
             # "use_tool": False,
             "answer": answer
         }
-    #If a tool is used:
+    #Check if there is a tool for this question type.
+    if extraction.use_tool and not is_tool_implemented(extraction.operation):
+        return {
+            "answer": f"I don't have a verified tool for {extraction.operation} yet, so I won't answer it directly."
+        }
+    
+    #If a tool exists, it is used:
     tool_result = run_math_tool(
         operation = extraction.operation,
         expression = extraction.expression,
         variable = extraction.variable,
+        lower_bound=extraction.lower_bound,
+        upper_bound=extraction.upper_bound
     )
     answer = explain_tool_result(req.question, extraction, tool_result)
     return {
