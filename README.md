@@ -1,5 +1,6 @@
 # Math Agent
 ## Architecture
+```
                     User Question
                           │
                           ▼
@@ -23,3 +24,4 @@
           └────────────────┬────────────────┘
                            ▼
                       Final Answer
+```
